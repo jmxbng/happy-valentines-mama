@@ -57,7 +57,7 @@ function openEnvelope() {
             // Start music dito pag binuksan na yung envelope
             const music = document.getElementById('bg-music');
             if (music) {
-                music.currentTime = 170; // 2:50 = 170 seconds
+                music.currentTime = 60; // 2:50 = 170 seconds
                 music.volume = 0.25;
                 music.play().catch(e => console.log("Play error:", e));
             }
@@ -166,3 +166,4 @@ styleSheet.innerHTML = `@keyframes floatUp {
     100% { transform: translateY(-110vh) rotate(360deg); opacity: 0; }
 }`;
 document.head.appendChild(styleSheet);
+
