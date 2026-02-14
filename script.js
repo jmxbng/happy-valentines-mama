@@ -1,17 +1,30 @@
 function checkPassword() {
-    const input = document.getElementById('password-input').value;
+    const input = document.getElementById('password-input').value.trim(); // trim para walang extra spaces
     const lock = document.getElementById('lock-screen');
     const envelope = document.getElementById('envelope-overlay');
     const errorMsg = document.getElementById('error-msg');
 
-    const correctDate = "11/26/2004"; 
+    const correctDate = "11/26/2004";
+    const correctWord = "forever";
 
-    if (input === correctDate || input.toLowerCase() === "forever") {
+    // Reset error state (para sa wrong attempts)
+    errorMsg.style.display = 'none';
+
+    if (input === correctDate || input.toLowerCase() === correctWord) {
         lock.style.opacity = "0";
         setTimeout(() => {
             lock.style.display = 'none';
             envelope.style.display = 'flex';
+
+            // Optional: Pwede ring i-start music dito kung gusto mo mas maaga (pag unlock)
+            // const music = document.getElementById('bg-music');
+            // if (music) {
+            //     music.currentTime = 170;
+            //     music.volume = 0.25;
+            //     music.play().catch(e => console.log("Error:", e));
+            // }
         }, 600);
+        return;
     } else {
         errorMsg.style.display = 'block';
         document.querySelector('.glass-card').style.animation = 'shake 0.4s';
@@ -25,7 +38,6 @@ const password = document.querySelector('#password-input');
 togglePassword.addEventListener('click', function () {
     const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
     password.setAttribute('type', type);
-    
     this.style.opacity = type === 'password' ? '0.5' : '1';
 });
 
@@ -41,12 +53,13 @@ function openEnvelope() {
             overlay.style.display = "none";
             content.style.display = "block";
             setInterval(createHeart, 400);
-        
-    const music = document.getElementById('bg-music');
+
+            // Start music dito pag binuksan na yung envelope
+            const music = document.getElementById('bg-music');
             if (music) {
-                music.currentTime = 170;   // Halimbawa: simulan sa 2:00 (120 seconds)
+                music.currentTime = 170; // 2:50 = 170 seconds
                 music.volume = 0.25;
-                music.play().catch(e => console.log("Error:", e));
+                music.play().catch(e => console.log("Play error:", e));
             }
         }, 800);
     }, 700);
@@ -86,7 +99,7 @@ function typeWriter() {
     if (index < message.length) {
         document.getElementById("typing-text").innerHTML += message.charAt(index);
         index++;
-        setTimeout(typeWriter, 35); 
+        setTimeout(typeWriter, 35);
     }
 }
 
@@ -102,6 +115,49 @@ const typingObserver = new IntersectionObserver((entries) => {
 document.addEventListener("DOMContentLoaded", () => {
     const target = document.getElementById("typing-container");
     if (target) typingObserver.observe(target);
+
+    // Music toggle button (kung meron ka nito sa HTML)
+    const toggleBtn = document.getElementById('music-toggle');
+    if (toggleBtn) {
+        toggleBtn.addEventListener('click', function() {
+            const music = document.getElementById('bg-music');
+            if (music) {
+                if (music.paused) {
+                    music.play().catch(e => console.log("Resume failed:", e));
+                    this.textContent = '🎵 On';
+                } else {
+                    music.pause();
+                    this.textContent = '🎵 Mute';
+                }
+            }
+        });
+    }
+
+    // Visibility change para sa music resume sa mobile/background
+    document.addEventListener("visibilitychange", () => {
+        const music = document.getElementById('bg-music');
+        if (music) {
+            if (document.visibilityState === "visible" && music.paused && music.currentTime > 0) {
+                music.play().catch(e => console.log("Auto-resume failed:", e));
+            }
+            // Optional: music.pause() kung gusto mo mag-pause sa background
+        }
+    });
+
+    // Extra safety: Try resume pag may scroll o touch (mobile-friendly)
+    window.addEventListener('scroll', () => {
+        const music = document.getElementById('bg-music');
+        if (music && music.paused && music.currentTime > 0) {
+            music.play().catch(() => {});
+        }
+    }, { passive: true });
+
+    document.addEventListener('touchstart', () => {
+        const music = document.getElementById('bg-music');
+        if (music && music.paused) {
+            music.play().catch(() => {});
+        }
+    }, { once: true });
 });
 
 const styleSheet = document.createElement('style');
@@ -110,13 +166,3 @@ styleSheet.innerHTML = `@keyframes floatUp {
     100% { transform: translateY(-110vh) rotate(360deg); opacity: 0; }
 }`;
 document.head.appendChild(styleSheet);
-document.getElementById('music-toggle').addEventListener('click', function() {
-    const music = document.getElementById('bg-music');
-    if (music.paused) {
-        music.play();
-        this.textContent = '🎵 On';
-    } else {
-        music.pause();
-        this.textContent = '🎵 Mute';
-    }
-});
